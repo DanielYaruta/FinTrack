@@ -131,7 +131,7 @@ mvn test
 mvn test -Dtest="TransactionServiceTest"
 ```
 
-56 тестов: 28 unit-тестов сервисного слоя + 28 MockMvc-тестов контроллеров.
+59 тестов: 30 unit-тестов сервисного слоя + 29 MockMvc-тестов контроллеров.
 Плюс 1 smoke-тест (`@Disabled`) — требует запущенного PostgreSQL, запускается вручную.
 
 ## Профили Spring
@@ -189,3 +189,4 @@ Flyway накатит миграции при первом старте авто
 - [x] Этап 8: Финальная документация и сборка
 - [x] Этап 9: Security-фикс (IDOR в GET /api/transactions/{id}), редактирование транзакций, скачивание отчётов из истории
 - [x] Этап 10: Docker (multi-stage Dockerfile, docker-compose, документация деплоя)
+- [x] Этап 11: Годовой тип отчёта (ReportType.YEARLY, generateYearly, resolveDateRange, UI)

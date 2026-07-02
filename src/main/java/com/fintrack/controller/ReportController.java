@@ -62,6 +62,13 @@ public class ReportController {
         return "redirect:/reports";
     }
 
+    @PostMapping("/yearly")
+    public String generateYearly(Authentication auth, RedirectAttributes ra) {
+        reportService.generateYearly(currentUserId(auth), LocalDate.now());
+        ra.addFlashAttribute("success", "Годовой отчёт сформирован");
+        return "redirect:/reports";
+    }
+
     @GetMapping("/preview")
     public String preview(
             Authentication auth,

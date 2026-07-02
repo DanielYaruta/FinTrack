@@ -69,20 +69,32 @@ public class ReportService {
         return report;
     }
 
+    public Report generateYearly(Long userId, LocalDate date) {
+        String period = date.format(DateTimeFormatter.ofPattern("yyyy"));
+        Report report = reportDao.save(new Report(period, ReportType.YEARLY, LocalDateTime.now(), userId));
+        log.info("Yearly report generated: period={}, userId={}", period, userId);
+        return report;
+    }
+
     public void deleteById(Long id) {
         reportDao.deleteById(id);
     }
 
     /**
      * Разбирает поле period в диапазон дат [from, to].
-     * MONTHLY "2024-05"  → [2024-05-01, 2024-05-31]
+     * MONTHLY  "2024-05"  → [2024-05-01, 2024-05-31]
      * QUARTERLY "2024-Q2" → [2024-04-01, 2024-06-30]
+     * YEARLY   "2024"     → [2024-01-01, 2024-12-31]
      */
     public LocalDate[] resolveDateRange(Report report) {
         if (report.getType() == ReportType.MONTHLY) {
             YearMonth ym = YearMonth.parse(report.getPeriod(),
                     DateTimeFormatter.ofPattern("yyyy-MM"));
             return new LocalDate[]{ym.atDay(1), ym.atEndOfMonth()};
+        }
+        if (report.getType() == ReportType.YEARLY) {
+            int year = Integer.parseInt(report.getPeriod());
+            return new LocalDate[]{LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31)};
         }
         // QUARTERLY: "2024-Q2"
         String[] parts = report.getPeriod().split("-Q");

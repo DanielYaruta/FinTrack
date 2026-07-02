@@ -94,6 +94,21 @@ class ReportControllerTest {
     }
 
     @Test
+    void download_yearly_shouldReturn200WithPdfContentType() throws Exception {
+        setupUser();
+        Report report = makeReport(5L, "2024", ReportType.YEARLY);
+        given(reportService.findById(5L)).willReturn(report);
+        given(reportService.resolveDateRange(report))
+                .willReturn(new LocalDate[]{LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31)});
+        given(transactionService.findByUserIdAndDateBetween(anyLong(), any(), any()))
+                .willReturn(List.of());
+
+        mockMvc.perform(get("/reports/5/download").param("format", "pdf"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF));
+    }
+
+    @Test
     void download_whenReportNotFound_shouldReturn404() throws Exception {
         setupUser();
         given(reportService.findById(99L))

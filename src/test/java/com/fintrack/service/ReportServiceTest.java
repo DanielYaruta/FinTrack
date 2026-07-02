@@ -13,6 +13,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class ReportServiceTest {
@@ -74,6 +76,32 @@ class ReportServiceTest {
         LocalDate[] range = reportService.resolveDateRange(report);
 
         assertThat(range[0]).isEqualTo(LocalDate.of(2024, 10, 1));
+        assertThat(range[1]).isEqualTo(LocalDate.of(2024, 12, 31));
+    }
+
+    // --- generateYearly ---
+
+    @Test
+    void generateYearly_shouldSaveReportWithYearPeriodAndYearlyType() {
+        LocalDate date = LocalDate.of(2024, 6, 15);
+        Report saved = new Report("2024", ReportType.YEARLY, LocalDateTime.now(), 1L);
+        given(reportDao.save(any())).willReturn(saved);
+
+        Report result = reportService.generateYearly(1L, date);
+
+        assertThat(result.getPeriod()).isEqualTo("2024");
+        assertThat(result.getType()).isEqualTo(ReportType.YEARLY);
+    }
+
+    // --- resolveDateRange (YEARLY) ---
+
+    @Test
+    void resolveDateRange_yearly_shouldReturnJanuaryToDecember() {
+        Report report = new Report("2024", ReportType.YEARLY, LocalDateTime.now(), 1L);
+
+        LocalDate[] range = reportService.resolveDateRange(report);
+
+        assertThat(range[0]).isEqualTo(LocalDate.of(2024, 1, 1));
         assertThat(range[1]).isEqualTo(LocalDate.of(2024, 12, 31));
     }
 }

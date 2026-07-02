@@ -44,9 +44,15 @@
                     </button>
                 </form>
 
-                <form th:action="@{/reports/quarterly}" method="post">
+                <form th:action="@{/reports/quarterly}" method="post" class="mb-2">
                     <button type="submit" class="btn btn-outline-secondary w-100 btn-sm">
                         <i class="bi bi-calendar3 me-1"></i>Квартальный отчёт
+                    </button>
+                </form>
+
+                <form th:action="@{/reports/yearly}" method="post">
+                    <button type="submit" class="btn btn-outline-success w-100 btn-sm">
+                        <i class="bi bi-calendar-range me-1"></i>Годовой отчёт
                     </button>
                 </form>
             </div>
@@ -73,8 +79,8 @@
                             <td th:text="${r.period}"></td>
                             <td>
                                 <span class="badge"
-                                      th:classappend="${r.type.name() == 'MONTHLY'} ? 'bg-primary' : 'bg-secondary'"
-                                      th:text="${r.type.name() == 'MONTHLY'} ? 'Месячный' : 'Квартальный'">
+                                      th:classappend="${r.type.name() == 'MONTHLY' ? 'bg-primary' : (r.type.name() == 'QUARTERLY' ? 'bg-secondary' : 'bg-success')}"
+                                      th:text="${r.type.name() == 'MONTHLY' ? 'Месячный' : (r.type.name() == 'QUARTERLY' ? 'Квартальный' : 'Годовой')}">
                                 </span>
                             </td>
                             <td class="text-muted small"
