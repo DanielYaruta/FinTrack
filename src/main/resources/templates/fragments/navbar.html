@@ -2,6 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
+<!-- Toast-контейнер: фиксирован в правом нижнем углу, z-index поверх всего -->
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"
+     style="z-index: 9999" th:fragment="toasts"></div>
+
 <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand fw-bold" th:href="@{/dashboard}">
