@@ -81,6 +81,44 @@ public class TransactionController {
         return "redirect:/transactions";
     }
 
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Authentication auth, Model model) {
+        Transaction tx = transactionService.findByIdAndUserId(id, currentUserId(auth));
+
+        TransactionDto dto = new TransactionDto();
+        dto.setAmount(tx.getAmount());
+        dto.setType(tx.getType());
+        dto.setCategoryId(tx.getCategory() != null ? tx.getCategory().getId() : null);
+        dto.setDate(tx.getDate());
+        dto.setDescription(tx.getDescription());
+
+        model.addAttribute("transactionDto", dto);
+        model.addAttribute("editId", id);
+        model.addAttribute("transactions", transactionService.findAllByUserId(currentUserId(auth)));
+        model.addAttribute("categories", categoryService.findAll());
+        return "transactions";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String update(@PathVariable Long id,
+                         @Valid @ModelAttribute("transactionDto") TransactionDto dto,
+                         BindingResult errors,
+                         Authentication auth,
+                         Model model,
+                         RedirectAttributes ra) {
+        Long userId = currentUserId(auth);
+
+        if (errors.hasErrors()) {
+            model.addAttribute("transactions", transactionService.findAllByUserId(userId));
+            model.addAttribute("categories", categoryService.findAll());
+            model.addAttribute("editId", id);
+            return "transactions";
+        }
+        transactionService.update(id, dto, userId);
+        ra.addFlashAttribute("success", "Транзакция обновлена");
+        return "redirect:/transactions";
+    }
+
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, Authentication auth, RedirectAttributes ra) {
         transactionService.deleteById(id, currentUserId(auth));

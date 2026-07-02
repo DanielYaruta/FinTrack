@@ -76,7 +76,7 @@ java -jar target/fintrack-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 
 - **Аутентификация** — form login с BCrypt, защита всех маршрутов
 - **Дашборд** — баланс, доходы/расходы, последние транзакции, график трендов за 6 месяцев
-- **Транзакции** — создание, удаление, фильтрация по датам, пагинация
+- **Транзакции** — создание, редактирование, удаление, фильтрация по датам
 - **Аналитика** — метрики за период, разбивка по категориям
 - **Категории** — управление категориями доходов и расходов
 - **Профиль** — просмотр данных пользователя
@@ -89,11 +89,11 @@ java -jar target/fintrack-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 src/
 ├── main/
 │   ├── java/com/fintrack/
-│   │   ├── config/         # Конфигурация (JdbcTemplate и др.)
 │   │   ├── controller/     # MVC-контроллеры (Thymeleaf) и REST-контроллеры
+│   │   ├── dao/            # JDBC-слой для Report (Spring JdbcTemplate)
 │   │   ├── dto/            # DTO с Bean Validation аннотациями
 │   │   ├── exception/      # ResourceNotFoundException, GlobalExceptionHandler
-│   │   ├── model/          # JPA-сущности: User, Transaction, Category
+│   │   ├── model/          # JPA-сущности: User, Transaction, Category; POJO: Report
 │   │   ├── repository/     # Spring Data JPA репозитории
 │   │   ├── security/       # SecurityConfig, UserDetailsServiceImpl
 │   │   └── service/        # Бизнес-логика, экспорт PDF/Excel
@@ -117,7 +117,7 @@ mvn test
 mvn test -Dtest="TransactionServiceTest"
 ```
 
-38 тестов: 21 unit-тест сервисного слоя + 17 MockMvc-тестов контроллеров.
+57 тестов: 27 unit-тестов сервисного слоя + 30 MockMvc-тестов контроллеров.
 
 ## Профили Spring
 
@@ -137,3 +137,4 @@ mvn test -Dtest="TransactionServiceTest"
 - [x] Этап 6: Тесты (Unit + MockMvc)
 - [x] Этап 7: Spring Security (аутентификация, CSRF, BCrypt)
 - [x] Этап 8: Финальная документация и сборка
+- [x] Этап 9: Security-фикс (IDOR в GET /api/transactions/{id}), редактирование транзакций, скачивание отчётов из истории

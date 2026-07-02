@@ -42,6 +42,15 @@ public class TransactionService {
                 .orElseThrow(() -> ResourceNotFoundException.of("Транзакция", id));
     }
 
+    public Transaction findByIdAndUserId(Long id, Long userId) {
+        Transaction transaction = findById(id);
+        // 404 вместо 403: не раскрываем факт существования чужой записи
+        if (!transaction.getUser().getId().equals(userId)) {
+            throw ResourceNotFoundException.of("Транзакция", id);
+        }
+        return transaction;
+    }
+
     @Transactional
     public Transaction save(TransactionDto dto, Long userId) {
         User user = userService.findById(userId);
@@ -60,8 +69,7 @@ public class TransactionService {
 
     @Transactional
     public Transaction update(Long id, TransactionDto dto, Long userId) {
-        Transaction transaction = findById(id);
-        verifyOwnership(transaction, userId);
+        Transaction transaction = findByIdAndUserId(id, userId);
 
         transaction.setAmount(dto.getAmount());
         transaction.setType(dto.getType());

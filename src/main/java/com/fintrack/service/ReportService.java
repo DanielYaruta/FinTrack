@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -64,5 +65,26 @@ public class ReportService {
 
     public void deleteById(Long id) {
         reportDao.deleteById(id);
+    }
+
+    /**
+     * Разбирает поле period в диапазон дат [from, to].
+     * MONTHLY "2024-05"  → [2024-05-01, 2024-05-31]
+     * QUARTERLY "2024-Q2" → [2024-04-01, 2024-06-30]
+     */
+    public LocalDate[] resolveDateRange(Report report) {
+        if (report.getType() == ReportType.MONTHLY) {
+            YearMonth ym = YearMonth.parse(report.getPeriod(),
+                    DateTimeFormatter.ofPattern("yyyy-MM"));
+            return new LocalDate[]{ym.atDay(1), ym.atEndOfMonth()};
+        }
+        // QUARTERLY: "2024-Q2"
+        String[] parts = report.getPeriod().split("-Q");
+        int year    = Integer.parseInt(parts[0]);
+        int quarter = Integer.parseInt(parts[1]);
+        int firstMonth = (quarter - 1) * 3 + 1;
+        LocalDate from = LocalDate.of(year, firstMonth, 1);
+        LocalDate to   = YearMonth.of(year, quarter * 3).atEndOfMonth();
+        return new LocalDate[]{from, to};
     }
 }

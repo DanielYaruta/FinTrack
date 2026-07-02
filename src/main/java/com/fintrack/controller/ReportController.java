@@ -1,9 +1,15 @@
 package com.fintrack.controller;
 
+import com.fintrack.exception.ResourceNotFoundException;
+import com.fintrack.model.Report;
+import com.fintrack.model.Transaction;
 import com.fintrack.service.AnalyticsService;
+import com.fintrack.service.ExcelExportService;
+import com.fintrack.service.PdfExportService;
 import com.fintrack.service.ReportService;
 import com.fintrack.service.TransactionService;
 import com.fintrack.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -11,7 +17,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 
 @Controller
 @RequestMapping("/reports")
@@ -20,15 +28,21 @@ public class ReportController {
     private final ReportService      reportService;
     private final TransactionService transactionService;
     private final AnalyticsService   analyticsService;
+    private final PdfExportService   pdfExportService;
+    private final ExcelExportService excelExportService;
     private final UserService        userService;
 
     public ReportController(ReportService reportService,
                             TransactionService transactionService,
                             AnalyticsService analyticsService,
+                            PdfExportService pdfExportService,
+                            ExcelExportService excelExportService,
                             UserService userService) {
         this.reportService      = reportService;
         this.transactionService = transactionService;
         this.analyticsService   = analyticsService;
+        this.pdfExportService   = pdfExportService;
+        this.excelExportService = excelExportService;
         this.userService        = userService;
     }
 
@@ -67,6 +81,47 @@ public class ReportController {
         model.addAttribute("from", from);
         model.addAttribute("to", to);
         return "reports-preview";
+    }
+
+    @GetMapping("/{id}/download")
+    public void download(@PathVariable Long id,
+                         @RequestParam String format,
+                         Authentication auth,
+                         HttpServletResponse response) throws IOException {
+
+        Report report = reportService.findById(id);
+
+        Long userId = currentUserId(auth);
+        if (!report.getUserId().equals(userId)) {
+            throw ResourceNotFoundException.of("Отчёт", id);
+        }
+
+        LocalDate[] range = reportService.resolveDateRange(report);
+        LocalDate from = range[0];
+        LocalDate to   = range[1];
+
+        List<Transaction> transactions =
+                transactionService.findByUserIdAndDateBetween(userId, from, to);
+
+        String filename = "fintrack-report-" + report.getPeriod();
+
+        switch (format.toLowerCase()) {
+            case "pdf" -> {
+                response.setContentType("application/pdf");
+                response.setHeader("Content-Disposition",
+                        "attachment; filename=\"" + filename + ".pdf\"");
+                pdfExportService.export(transactions, from, to, response.getOutputStream());
+            }
+            case "excel" -> {
+                response.setContentType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                response.setHeader("Content-Disposition",
+                        "attachment; filename=\"" + filename + ".xlsx\"");
+                excelExportService.export(transactions, from, to, response.getOutputStream());
+            }
+            default -> response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    "Неподдерживаемый формат: " + format + ". Используйте pdf или excel.");
+        }
     }
 
     @PostMapping("/{id}/delete")

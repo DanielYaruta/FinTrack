@@ -18,19 +18,22 @@
 
     <div class="row g-4">
 
-        <!-- === Форма добавления === -->
+        <!-- === Форма добавления / редактирования === -->
         <div class="col-lg-4">
             <div class="card p-4">
-                <h5 class="card-title mb-3"><i class="bi bi-plus-circle me-1"></i>Новая транзакция</h5>
+                <h5 class="card-title mb-3">
+                    <i th:class="${editId != null} ? 'bi bi-pencil-square me-1' : 'bi bi-plus-circle me-1'"></i>
+                    <span th:text="${editId != null} ? 'Редактировать' : 'Новая транзакция'">Новая транзакция</span>
+                </h5>
 
                 <!--
-                  th:action="@{/transactions}" — Thymeleaf генерирует правильный URL,
-                    учитывая context path приложения.
-                  th:object="${transactionDto}" — привязываем форму к DTO.
-                    Теперь th:field="*{amount}" эквивалентно th:field="${transactionDto.amount}".
+                  Форма работает в двух режимах:
+                  - создание: action=/transactions, editId == null
+                  - редактирование: action=/transactions/{editId}/edit, editId != null
                 -->
                 <form id="transaction-form"
-                      th:action="@{/transactions}" method="post" th:object="${transactionDto}"
+                      th:action="${editId != null} ? @{/transactions/{id}/edit(id=${editId})} : @{/transactions}"
+                      method="post" th:object="${transactionDto}"
                       novalidate>
 
                     <!-- Сумма -->
@@ -96,8 +99,14 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-plus-lg me-1"></i>Добавить
+                        <i th:class="${editId != null} ? 'bi bi-check-lg me-1' : 'bi bi-plus-lg me-1'"></i>
+                        <span th:text="${editId != null} ? 'Сохранить' : 'Добавить'">Добавить</span>
                     </button>
+                    <a th:if="${editId != null}"
+                       th:href="@{/transactions}"
+                       class="btn btn-outline-secondary w-100 mt-2">
+                        Отмена
+                    </a>
                 </form>
             </div>
         </div>
@@ -155,10 +164,13 @@
                                 th:classappend="${t.type.name() == 'INCOME'} ? 'amount-income' : 'amount-expense'"
                                 th:text="${(t.type.name() == 'INCOME' ? '+' : '-') + ' ₽ ' + #numbers.formatDecimal(t.amount, 0, 'WHITESPACE', 2, 'COMMA')}">
                             </td>
-                            <td class="text-end">
-                                <!-- Удаление через POST, без JS -->
+                            <td class="text-end text-nowrap">
+                                <a th:href="@{/transactions/{id}/edit(id=${t.id})}"
+                                   class="btn btn-sm btn-outline-secondary me-1">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
                                 <form th:action="@{/transactions/{id}/delete(id=${t.id})}"
-                                      method="post"
+                                      method="post" class="d-inline"
                                       onsubmit="return confirm('Удалить транзакцию?')">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                         <i class="bi bi-trash"></i>

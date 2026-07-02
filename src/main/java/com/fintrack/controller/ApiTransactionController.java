@@ -34,14 +34,22 @@ public class ApiTransactionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(TransactionResponse.from(transactionService.findById(id)));
+    public ResponseEntity<TransactionResponse> getById(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(
+                TransactionResponse.from(transactionService.findByIdAndUserId(id, currentUserId(auth))));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public TransactionResponse create(@Valid @RequestBody TransactionDto dto, Authentication auth) {
         return TransactionResponse.from(transactionService.save(dto, currentUserId(auth)));
+    }
+
+    @PutMapping("/{id}")
+    public TransactionResponse update(@PathVariable Long id,
+                                      @Valid @RequestBody TransactionDto dto,
+                                      Authentication auth) {
+        return TransactionResponse.from(transactionService.update(id, dto, currentUserId(auth)));
     }
 
     @DeleteMapping("/{id}")

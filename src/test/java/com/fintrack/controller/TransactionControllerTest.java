@@ -1,5 +1,6 @@
 package com.fintrack.controller;
 
+import com.fintrack.exception.ResourceNotFoundException;
 import com.fintrack.model.Transaction;
 import com.fintrack.model.TransactionType;
 import com.fintrack.model.User;
@@ -139,6 +140,73 @@ class TransactionControllerTest {
                 .param("date",   "2099-01-01"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeHasFieldErrors("transactionDto", "date"));
+    }
+
+    // --- GET /transactions/{id}/edit ---
+
+    @Test
+    void editForm_shouldPrefillFormAndSetEditId() throws Exception {
+        setupUser();
+        Transaction tx = new Transaction(
+                BigDecimal.valueOf(3_000), TransactionType.INCOME,
+                null, LocalDate.of(2024, 6, 10), "Зарплата", null);
+        ReflectionTestUtils.setField(tx, "id", 7L);
+        given(transactionService.findByIdAndUserId(eq(7L), anyLong())).willReturn(tx);
+        given(transactionService.findAllByUserId(anyLong())).willReturn(List.of());
+        given(categoryService.findAll()).willReturn(List.of());
+
+        mockMvc.perform(get("/transactions/7/edit"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("transactions"))
+                .andExpect(model().attribute("editId", 7L))
+                .andExpect(model().attributeExists("transactionDto", "categories"));
+    }
+
+    @Test
+    void editForm_whenNotOwner_shouldReturn404() throws Exception {
+        setupUser();
+        given(transactionService.findByIdAndUserId(eq(7L), anyLong()))
+                .willThrow(ResourceNotFoundException.of("Транзакция", 7L));
+
+        mockMvc.perform(get("/transactions/7/edit"))
+                .andExpect(status().isNotFound());
+    }
+
+    // --- POST /transactions/{id}/edit ---
+
+    @Test
+    void update_withValidData_shouldRedirectWithSuccessFlash() throws Exception {
+        setupUser();
+        Transaction updated = new Transaction(
+                BigDecimal.valueOf(5_000), TransactionType.EXPENSE,
+                null, LocalDate.of(2024, 6, 15), null, null);
+        given(transactionService.update(eq(7L), any(), anyLong())).willReturn(updated);
+
+        mockMvc.perform(post("/transactions/7/edit").with(csrf())
+                .param("amount", "5000")
+                .param("type",   "EXPENSE")
+                .param("date",   "2024-06-15"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/transactions"))
+                .andExpect(flash().attributeExists("success"));
+
+        verify(transactionService).update(eq(7L), any(), anyLong());
+    }
+
+    @Test
+    void update_withNegativeAmount_shouldReturnFormWithErrors() throws Exception {
+        setupUser();
+        given(transactionService.findAllByUserId(anyLong())).willReturn(List.of());
+        given(categoryService.findAll()).willReturn(List.of());
+
+        mockMvc.perform(post("/transactions/7/edit").with(csrf())
+                .param("amount", "-100")
+                .param("type",   "EXPENSE")
+                .param("date",   "2024-06-15"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("transactions"))
+                .andExpect(model().attribute("editId", 7L))
+                .andExpect(model().attributeHasFieldErrors("transactionDto", "amount"));
     }
 
     // --- POST /transactions/{id}/delete ---

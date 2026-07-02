@@ -80,12 +80,21 @@
                             <td class="text-muted small"
                                 th:text="${#temporals.format(r.generatedAt, 'dd.MM.yyyy HH:mm')}">
                             </td>
-                            <td class="text-end">
-                                <!-- Stage 4: здесь будет кнопка Download PDF/Excel -->
+                            <td class="text-end text-nowrap">
+                                <a th:href="@{/reports/{id}/download(id=${r.id},format='pdf')}"
+                                   class="btn btn-sm btn-outline-danger me-1"
+                                   title="Скачать PDF">
+                                    <i class="bi bi-file-earmark-pdf"></i>
+                                </a>
+                                <a th:href="@{/reports/{id}/download(id=${r.id},format='excel')}"
+                                   class="btn btn-sm btn-outline-success me-1"
+                                   title="Скачать Excel">
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                </a>
                                 <form th:action="@{/reports/{id}/delete(id=${r.id})}"
-                                      method="post"
+                                      method="post" class="d-inline"
                                       onsubmit="return confirm('Удалить запись?')">
-                                    <button class="btn btn-sm btn-outline-danger">
+                                    <button class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>

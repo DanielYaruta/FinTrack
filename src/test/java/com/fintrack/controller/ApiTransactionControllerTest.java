@@ -2,6 +2,7 @@ package com.fintrack.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintrack.dto.TransactionDto;
+import com.fintrack.exception.ResourceNotFoundException;
 import com.fintrack.model.Transaction;
 import com.fintrack.model.TransactionType;
 import com.fintrack.model.User;
@@ -86,14 +87,25 @@ class ApiTransactionControllerTest {
     // --- GET /api/transactions/{id} ---
 
     @Test
-    void getById_whenExists_shouldReturn200() throws Exception {
+    void getById_whenOwner_shouldReturn200() throws Exception {
+        setupUser();
         Transaction tx = makeTransaction(42L, BigDecimal.valueOf(3_000), TransactionType.INCOME);
-        given(transactionService.findById(42L)).willReturn(tx);
+        given(transactionService.findByIdAndUserId(eq(42L), anyLong())).willReturn(tx);
 
         mockMvc.perform(get("/api/transactions/42"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(42))
                 .andExpect(jsonPath("$.type").value("INCOME"));
+    }
+
+    @Test
+    void getById_whenNotOwner_shouldReturn404() throws Exception {
+        setupUser();
+        given(transactionService.findByIdAndUserId(eq(42L), anyLong()))
+                .willThrow(ResourceNotFoundException.of("Транзакция", 42L));
+
+        mockMvc.perform(get("/api/transactions/42"))
+                .andExpect(status().isNotFound());
     }
 
     // --- POST /api/transactions ---
@@ -136,6 +148,41 @@ class ApiTransactionControllerTest {
                 .content("{\"amount\":-500,\"type\":\"EXPENSE\",\"date\":\"2024-06-15\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.amount").exists());
+    }
+
+    // --- PUT /api/transactions/{id} ---
+
+    @Test
+    void update_withValidJson_shouldReturn200() throws Exception {
+        setupUser();
+        TransactionDto dto = new TransactionDto();
+        dto.setAmount(BigDecimal.valueOf(6_000));
+        dto.setType(TransactionType.INCOME);
+        dto.setDate(LocalDate.of(2024, 6, 20));
+
+        Transaction updated = makeTransaction(5L, BigDecimal.valueOf(6_000), TransactionType.INCOME);
+        given(transactionService.update(eq(5L), any(TransactionDto.class), anyLong())).willReturn(updated);
+
+        mockMvc.perform(put("/api/transactions/5")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.type").value("INCOME"));
+    }
+
+    @Test
+    void update_whenNotOwner_shouldReturn404() throws Exception {
+        setupUser();
+        given(transactionService.update(eq(5L), any(), anyLong()))
+                .willThrow(ResourceNotFoundException.of("Транзакция", 5L));
+
+        mockMvc.perform(put("/api/transactions/5")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amount\":1000,\"type\":\"INCOME\",\"date\":\"2024-06-15\"}"))
+                .andExpect(status().isNotFound());
     }
 
     // --- DELETE /api/transactions/{id} ---

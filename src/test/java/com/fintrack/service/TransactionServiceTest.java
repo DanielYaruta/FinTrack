@@ -86,6 +86,29 @@ class TransactionServiceTest {
                 .hasMessageContaining("99");
     }
 
+    // --- findByIdAndUserId ---
+
+    @Test
+    void findByIdAndUserId_whenOwner_shouldReturnTransaction() {
+        Transaction tx = makeTransaction(10L, 1L);
+        given(transactionRepository.findById(10L)).willReturn(Optional.of(tx));
+
+        Transaction result = transactionService.findByIdAndUserId(10L, 1L);
+
+        assertThat(result).isSameAs(tx);
+    }
+
+    @Test
+    void findByIdAndUserId_whenNotOwner_shouldThrowResourceNotFoundException() {
+        Transaction tx = makeTransaction(10L, 99L); // принадлежит пользователю 99
+        given(transactionRepository.findById(10L)).willReturn(Optional.of(tx));
+
+        // Должен вернуть 404, не 403 — не раскрываем факт существования чужой записи
+        assertThatThrownBy(() -> transactionService.findByIdAndUserId(10L, 1L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("10");
+    }
+
     // --- save ---
 
     @Test
