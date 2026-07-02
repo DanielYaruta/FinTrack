@@ -99,13 +99,29 @@ src/
 │   │   └── service/        # Бизнес-логика, экспорт PDF/Excel
 │   └── resources/
 │       ├── db/migration/   # Flyway: V1 схема, V2 сиды, V3 пароль
-│       ├── static/         # CSS, JS
+│       ├── static/         # CSS (app.css), JS, images (favicon.svg)
 │       └── templates/      # Thymeleaf-шаблоны + фрагменты
 └── test/
     └── java/com/fintrack/
         ├── service/        # Unit-тесты сервисов (Mockito)
         └── controller/     # WebMvcTest тесты контроллеров
 ```
+
+## Скриншоты
+
+> Скриншоты нужно сделать вручную и положить в `docs/screenshots/` с этими именами файлов.
+
+**Дашборд** — баланс, тренды, последние транзакции:
+![Dashboard](docs/screenshots/dashboard.png)
+
+**Транзакции** — список с формой добавления/редактирования:
+![Transactions](docs/screenshots/transactions.png)
+
+**Отчёты** — история с кнопками скачивания PDF/Excel:
+![Reports](docs/screenshots/reports.png)
+
+**Вход** — страница авторизации:
+![Login](docs/screenshots/login.png)
 
 ## Тесты
 

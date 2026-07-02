@@ -4,6 +4,8 @@ import com.fintrack.dao.ReportDao;
 import com.fintrack.exception.ResourceNotFoundException;
 import com.fintrack.model.Report;
 import com.fintrack.model.ReportType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,6 +27,8 @@ import java.util.List;
  */
 @Service
 public class ReportService {
+
+    private static final Logger log = LoggerFactory.getLogger(ReportService.class);
 
     private final ReportDao reportDao;
 
@@ -48,8 +52,9 @@ public class ReportService {
      */
     public Report generateMonthly(Long userId, LocalDate date) {
         String period = date.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        Report report = new Report(period, ReportType.MONTHLY, LocalDateTime.now(), userId);
-        return reportDao.save(report);
+        Report report = reportDao.save(new Report(period, ReportType.MONTHLY, LocalDateTime.now(), userId));
+        log.info("Monthly report generated: period={}, userId={}", period, userId);
+        return report;
     }
 
     /**
@@ -59,8 +64,9 @@ public class ReportService {
     public Report generateQuarterly(Long userId, LocalDate date) {
         int quarter = (date.getMonthValue() - 1) / 3 + 1;
         String period = date.getYear() + "-Q" + quarter;
-        Report report = new Report(period, ReportType.QUARTERLY, LocalDateTime.now(), userId);
-        return reportDao.save(report);
+        Report report = reportDao.save(new Report(period, ReportType.QUARTERLY, LocalDateTime.now(), userId));
+        log.info("Quarterly report generated: period={}, userId={}", period, userId);
+        return report;
     }
 
     public void deleteById(Long id) {

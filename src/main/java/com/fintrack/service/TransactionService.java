@@ -7,6 +7,8 @@ import com.fintrack.model.Transaction;
 import com.fintrack.model.User;
 import com.fintrack.repository.CategoryRepository;
 import com.fintrack.repository.TransactionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,8 @@ import java.util.List;
 @Service
 @Transactional(readOnly = true)
 public class TransactionService {
+
+    private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
@@ -64,7 +68,9 @@ public class TransactionService {
                 dto.getDescription(),
                 user
         );
-        return transactionRepository.save(transaction);
+        Transaction saved = transactionRepository.save(transaction);
+        log.info("Transaction created: id={}, userId={}", saved.getId(), userId);
+        return saved;
     }
 
     @Transactional
@@ -76,6 +82,7 @@ public class TransactionService {
         transaction.setCategory(resolveCategory(dto.getCategoryId()));
         transaction.setDate(dto.getDate());
         transaction.setDescription(dto.getDescription());
+        log.info("Transaction updated: id={}, userId={}", id, userId);
         // Hibernate сделает UPDATE автоматически при закрытии транзакции
         return transaction;
     }
@@ -83,6 +90,7 @@ public class TransactionService {
     @Transactional
     public void deleteById(Long id, Long userId) {
         transactionRepository.delete(findByIdAndUserId(id, userId));
+        log.info("Transaction deleted: id={}, userId={}", id, userId);
     }
 
     // --- Вспомогательные методы ---

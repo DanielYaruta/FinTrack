@@ -1,5 +1,7 @@
 package com.fintrack.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,20 +24,25 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 // Статика и страница входа — доступны без авторизации
-                .requestMatchers("/login", "/css/**", "/js/**", "/webjars/**", "/error").permitAll()
+                .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/webjars/**", "/error").permitAll()
                 // Всё остальное — только для авторизованных пользователей
                 .anyRequest().authenticated()
             )
 
             // Form Login — стандартная форма логина с нашим шаблоном
             .formLogin(form -> form
-                .loginPage("/login")                      // наш кастомный шаблон login.html
-                .defaultSuccessUrl("/dashboard", true)    // true = всегда на /dashboard после входа
+                .loginPage("/login")
+                .successHandler((request, response, authentication) -> {
+                    log.info("Login successful: {}", authentication.getName());
+                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                })
                 .permitAll()
             )
 
