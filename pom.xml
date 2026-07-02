@@ -102,6 +102,20 @@
             <version>${poi.version}</version>
         </dependency>
 
+        <!-- ===== БЕЗОПАСНОСТЬ ===== -->
+
+        <!-- Spring Security — аутентификация и авторизация -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Thymeleaf-интеграция для Security: th:if="hasRole('USER')", sec:authorize и т.д. -->
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+        </dependency>
+
         <!-- ===== DEV / ИНСТРУМЕНТЫ ===== -->
 
         <!--
@@ -121,6 +135,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- @WithMockUser, @WithUserDetails — тест Security без реального логина -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
 

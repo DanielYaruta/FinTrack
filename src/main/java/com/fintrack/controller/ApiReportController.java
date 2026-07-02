@@ -4,57 +4,45 @@ import com.fintrack.model.Transaction;
 import com.fintrack.service.ExcelExportService;
 import com.fintrack.service.PdfExportService;
 import com.fintrack.service.TransactionService;
+import com.fintrack.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * REST-контроллер для скачивания файлов.
- *
- * Ключевое отличие от обычных API-методов: мы не возвращаем объект для сериализации,
- * а пишем байты напрямую в HttpServletResponse.getOutputStream().
- *
- * Content-Disposition: attachment — браузер предложит сохранить файл,
- *   а не открывать его на странице.
- */
 @RestController
 @RequestMapping("/api/reports")
 public class ApiReportController {
 
-    private static final Long DEMO_USER_ID = 1L;
-
     private final TransactionService transactionService;
     private final PdfExportService   pdfExportService;
     private final ExcelExportService excelExportService;
+    private final UserService        userService;
 
     public ApiReportController(TransactionService transactionService,
                                PdfExportService pdfExportService,
-                               ExcelExportService excelExportService) {
+                               ExcelExportService excelExportService,
+                               UserService userService) {
         this.transactionService  = transactionService;
         this.pdfExportService    = pdfExportService;
         this.excelExportService  = excelExportService;
+        this.userService         = userService;
     }
 
-    /**
-     * GET /api/reports/export?format=pdf&from=2024-04-01&to=2024-06-30
-     * GET /api/reports/export?format=excel&from=2024-04-01&to=2024-06-30
-     *
-     * Браузер напрямую скачивает файл по этому URL.
-     * Кнопки "Скачать" на странице предпросмотра ведут сюда через обычный <a href>.
-     */
     @GetMapping("/export")
     public void export(
             @RequestParam String format,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            Authentication auth,
             HttpServletResponse response) throws IOException {
 
         List<Transaction> transactions =
-                transactionService.findByUserIdAndDateBetween(DEMO_USER_ID, from, to);
+                transactionService.findByUserIdAndDateBetween(currentUserId(auth), from, to);
 
         String filename = "fintrack-report-" + from + "-" + to;
 
@@ -76,5 +64,9 @@ public class ApiReportController {
                     HttpServletResponse.SC_BAD_REQUEST,
                     "Неподдерживаемый формат: " + format + ". Используйте pdf или excel.");
         }
+    }
+
+    private Long currentUserId(Authentication auth) {
+        return userService.findByEmail(auth.getName()).getId();
     }
 }

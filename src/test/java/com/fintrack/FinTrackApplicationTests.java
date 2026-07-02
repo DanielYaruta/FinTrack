@@ -1,20 +1,22 @@
 package com.fintrack;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Smoke-тест: проверяет, что Spring-контекст поднимается без ошибок.
- * Запускать: mvn test (или зелёная кнопка рядом с классом в IDEA).
+ *
+ * Требует запущенного PostgreSQL с базой fintrack_dev.
+ * Запуск вручную: mvn test -Dtest=FinTrackApplicationTests
  */
 @SpringBootTest
 @ActiveProfiles("dev")
+@Disabled("Интеграционный тест — требует запущенного PostgreSQL. Запускай вручную.")
 class FinTrackApplicationTests {
 
     @Test
     void contextLoads() {
-        // Если контекст поднялся — тест зелёный.
-        // Если какой-то бин не создаётся (неверный конфиг, нет БД) — тест упадёт с подробной ошибкой.
     }
 }

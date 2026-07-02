@@ -3,9 +3,12 @@ package com.fintrack.controller;
 import com.fintrack.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @ControllerAdvice — глобальный обработчик, применяется ко ВСЕМ контроллерам.
@@ -21,6 +24,26 @@ public class GlobalExceptionHandler {
     public String handleNotFound(ResourceNotFoundException ex, Model model) {
         model.addAttribute("message", ex.getMessage());
         return "error/404";
+    }
+
+    /**
+     * Валидация @RequestBody в REST-контроллерах.
+     *
+     * Когда @Valid + @RequestBody не проходит проверку, Spring бросает
+     * MethodArgumentNotValidException. Без этого обработчика его перехватил бы
+     * handleError(Exception) и вернул HTML-страницу 500 — неправильно для REST.
+     *
+     * @ResponseBody — явно говорим Spring сериализовать Map в JSON, а не искать view.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Map<String, String> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            errors.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+        return errors;
     }
 
     @ExceptionHandler(Exception.class)

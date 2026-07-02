@@ -38,6 +38,9 @@ public class User {
     @Column(nullable = false)
     private LocalDate registrationDate;
 
+    @Column(nullable = false)
+    private String passwordHash = "";
+
     /**
      * OneToMany — у одного пользователя много транзакций.
      * mappedBy = "user" говорит JPA: "сторона-хозяин связи — поле user
@@ -75,6 +78,9 @@ public class User {
 
     public LocalDate getRegistrationDate() { return registrationDate; }
     public void setRegistrationDate(LocalDate registrationDate) { this.registrationDate = registrationDate; }
+
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
     public List<Transaction> getTransactions() { return transactions; }
     public void setTransactions(List<Transaction> transactions) { this.transactions = transactions; }

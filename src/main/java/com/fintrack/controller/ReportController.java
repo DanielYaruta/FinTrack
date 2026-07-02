@@ -3,7 +3,9 @@ package com.fintrack.controller;
 import com.fintrack.service.AnalyticsService;
 import com.fintrack.service.ReportService;
 import com.fintrack.service.TransactionService;
+import com.fintrack.service.UserService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,55 +17,53 @@ import java.time.LocalDate;
 @RequestMapping("/reports")
 public class ReportController {
 
-    private static final Long DEMO_USER_ID = 1L;
-
     private final ReportService      reportService;
     private final TransactionService transactionService;
     private final AnalyticsService   analyticsService;
+    private final UserService        userService;
 
     public ReportController(ReportService reportService,
                             TransactionService transactionService,
-                            AnalyticsService analyticsService) {
+                            AnalyticsService analyticsService,
+                            UserService userService) {
         this.reportService      = reportService;
         this.transactionService = transactionService;
         this.analyticsService   = analyticsService;
+        this.userService        = userService;
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("reports", reportService.findByUserId(DEMO_USER_ID));
+    public String list(Authentication auth, Model model) {
+        model.addAttribute("reports", reportService.findByUserId(currentUserId(auth)));
         return "reports";
     }
 
     @PostMapping("/monthly")
-    public String generateMonthly(RedirectAttributes ra) {
-        reportService.generateMonthly(DEMO_USER_ID, LocalDate.now());
+    public String generateMonthly(Authentication auth, RedirectAttributes ra) {
+        reportService.generateMonthly(currentUserId(auth), LocalDate.now());
         ra.addFlashAttribute("success", "Месячный отчёт сформирован");
         return "redirect:/reports";
     }
 
     @PostMapping("/quarterly")
-    public String generateQuarterly(RedirectAttributes ra) {
-        reportService.generateQuarterly(DEMO_USER_ID, LocalDate.now());
+    public String generateQuarterly(Authentication auth, RedirectAttributes ra) {
+        reportService.generateQuarterly(currentUserId(auth), LocalDate.now());
         ra.addFlashAttribute("success", "Квартальный отчёт сформирован");
         return "redirect:/reports";
     }
 
-    /**
-     * GET /reports/preview?from=2024-04-01&to=2024-06-30
-     * HTML-предпросмотр отчёта перед скачиванием.
-     * Кнопки "Скачать PDF/Excel" ведут на /api/reports/export — без JS.
-     */
     @GetMapping("/preview")
     public String preview(
+            Authentication auth,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             Model model) {
 
+        Long userId = currentUserId(auth);
         model.addAttribute("transactions",
-                transactionService.findByUserIdAndDateBetween(DEMO_USER_ID, from, to));
+                transactionService.findByUserIdAndDateBetween(userId, from, to));
         model.addAttribute("metrics",
-                analyticsService.getMetricsForPeriod(DEMO_USER_ID, from, to));
+                analyticsService.getMetricsForPeriod(userId, from, to));
         model.addAttribute("from", from);
         model.addAttribute("to", to);
         return "reports-preview";
@@ -74,5 +74,9 @@ public class ReportController {
         reportService.deleteById(id);
         ra.addFlashAttribute("success", "Отчёт удалён");
         return "redirect:/reports";
+    }
+
+    private Long currentUserId(Authentication auth) {
+        return userService.findByEmail(auth.getName()).getId();
     }
 }

@@ -4,8 +4,10 @@ import com.fintrack.dto.TransactionDto;
 import com.fintrack.model.Transaction;
 import com.fintrack.service.CategoryService;
 import com.fintrack.service.TransactionService;
+import com.fintrack.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,39 +22,32 @@ import java.util.Optional;
 @RequestMapping("/transactions")
 public class TransactionController {
 
-    private static final Long DEMO_USER_ID = 1L;
-
     private final TransactionService transactionService;
-    private final CategoryService categoryService;
+    private final CategoryService    categoryService;
+    private final UserService        userService;
 
     public TransactionController(TransactionService transactionService,
-                                 CategoryService categoryService) {
+                                 CategoryService categoryService,
+                                 UserService userService) {
         this.transactionService = transactionService;
-        this.categoryService = categoryService;
+        this.categoryService    = categoryService;
+        this.userService        = userService;
     }
 
-    /**
-     * GET /transactions — список транзакций + форма добавления.
-     *
-     * @RequestParam с Optional — параметр необязателен. Если from/to не переданы,
-     * показываем все транзакции; если переданы — фильтруем за период.
-     *
-     * model.containsAttribute("transactionDto") — проверяем, не пришёл ли dto
-     * из предыдущего POST с ошибками (через FlashAttribute). Если пришёл —
-     * не перезаписываем его новым пустым объектом, чтобы форма сохранила введённые значения.
-     */
     @GetMapping
     public String list(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> to,
+            Authentication auth,
             Model model) {
+
+        Long userId = currentUserId(auth);
 
         List<Transaction> transactions;
         if (from.isPresent() && to.isPresent()) {
-            transactions = transactionService.findByUserIdAndDateBetween(
-                    DEMO_USER_ID, from.get(), to.get());
+            transactions = transactionService.findByUserIdAndDateBetween(userId, from.get(), to.get());
         } else {
-            transactions = transactionService.findAllByUserId(DEMO_USER_ID);
+            transactions = transactionService.findAllByUserId(userId);
         }
 
         if (!model.containsAttribute("transactionDto")) {
@@ -68,40 +63,32 @@ public class TransactionController {
         return "transactions";
     }
 
-    /**
-     * POST /transactions — создание новой транзакции.
-     *
-     * @Valid — запускает Bean Validation на dto.
-     * BindingResult — держит результаты валидации. ВАЖНО: он должен идти сразу
-     *   после @Valid параметра, иначе Spring бросит исключение вместо передачи ошибок.
-     *
-     * Паттерн PRG (Post/Redirect/Get): после успешного сохранения — redirect,
-     *   чтобы F5 не создавал дублирующую транзакцию.
-     */
     @PostMapping
     public String create(@Valid @ModelAttribute("transactionDto") TransactionDto dto,
                          BindingResult errors,
+                         Authentication auth,
                          Model model,
                          RedirectAttributes ra) {
+        Long userId = currentUserId(auth);
+
         if (errors.hasErrors()) {
-            // Возвращаем страницу с ошибками — форма уже содержит введённые данные
-            model.addAttribute("transactions", transactionService.findAllByUserId(DEMO_USER_ID));
+            model.addAttribute("transactions", transactionService.findAllByUserId(userId));
             model.addAttribute("categories", categoryService.findAll());
             return "transactions";
         }
-        transactionService.save(dto, DEMO_USER_ID);
+        transactionService.save(dto, userId);
         ra.addFlashAttribute("success", "Транзакция успешно добавлена");
         return "redirect:/transactions";
     }
 
-    /**
-     * POST /transactions/{id}/delete — удаление.
-     * HTML-формы поддерживают только GET и POST, поэтому удаление — через POST на отдельный URL.
-     */
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, RedirectAttributes ra) {
-        transactionService.deleteById(id, DEMO_USER_ID);
+    public String delete(@PathVariable Long id, Authentication auth, RedirectAttributes ra) {
+        transactionService.deleteById(id, currentUserId(auth));
         ra.addFlashAttribute("success", "Транзакция удалена");
         return "redirect:/transactions";
+    }
+
+    private Long currentUserId(Authentication auth) {
+        return userService.findByEmail(auth.getName()).getId();
     }
 }

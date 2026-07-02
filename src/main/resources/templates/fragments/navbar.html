@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 
 <!-- Toast-контейнер: фиксирован в правом нижнем углу, z-index поверх всего -->
@@ -29,38 +30,52 @@
                 <li class="nav-item">
                     <a class="nav-link"
                        th:href="@{/dashboard}"
-                       th:classappend="${#httpServletRequest.requestURI.startsWith('/dashboard')} ? 'active'">
+                       th:classappend="${currentUri != null and currentUri.startsWith('/dashboard')} ? 'active'">
                         <i class="bi bi-speedometer2 me-1"></i>Дашборд
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link"
                        th:href="@{/transactions}"
-                       th:classappend="${#httpServletRequest.requestURI.startsWith('/transactions')} ? 'active'">
+                       th:classappend="${currentUri != null and currentUri.startsWith('/transactions')} ? 'active'">
                         <i class="bi bi-arrow-left-right me-1"></i>Транзакции
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link"
                        th:href="@{/categories}"
-                       th:classappend="${#httpServletRequest.requestURI.startsWith('/categories')} ? 'active'">
+                       th:classappend="${currentUri != null and currentUri.startsWith('/categories')} ? 'active'">
                         <i class="bi bi-tags me-1"></i>Категории
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link"
                        th:href="@{/reports}"
-                       th:classappend="${#httpServletRequest.requestURI.startsWith('/reports')} ? 'active'">
+                       th:classappend="${currentUri != null and currentUri.startsWith('/reports')} ? 'active'">
                         <i class="bi bi-file-earmark-bar-graph me-1"></i>Отчёты
                     </a>
                 </li>
             </ul>
 
-            <a class="nav-link text-light"
-               th:href="@{/profile}"
-               th:classappend="${#httpServletRequest.requestURI.startsWith('/profile')} ? 'active'">
-                <i class="bi bi-person-circle me-1"></i>Профиль
-            </a>
+            <!-- Правая часть: email пользователя + кнопка выхода -->
+            <div class="d-flex align-items-center gap-2">
+                <a class="nav-link text-light"
+                   th:href="@{/profile}"
+                   th:classappend="${currentUri != null and currentUri.startsWith('/profile')} ? 'active'">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <span th:text="${currentUserEmail}">user@example.com</span>
+                </a>
+
+                <!--
+                  Выход: POST /logout — Spring Security обрабатывает его сам.
+                  Thymeleaf добавит скрытый CSRF-токен автоматически через th:action.
+                -->
+                <form th:action="@{/logout}" method="post" class="mb-0">
+                    <button type="submit" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </nav>
