@@ -1,8 +1,7 @@
 package com.fintrack.controller;
 
 import com.fintrack.model.Transaction;
-import com.fintrack.service.ExcelExportService;
-import com.fintrack.service.PdfExportService;
+import com.fintrack.service.ReportExportService;
 import com.fintrack.service.TransactionService;
 import com.fintrack.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,18 +17,15 @@ import java.util.List;
 @RequestMapping("/api/reports")
 public class ApiReportController {
 
-    private final TransactionService transactionService;
-    private final PdfExportService   pdfExportService;
-    private final ExcelExportService excelExportService;
-    private final UserService        userService;
+    private final TransactionService  transactionService;
+    private final ReportExportService reportExportService;
+    private final UserService         userService;
 
     public ApiReportController(TransactionService transactionService,
-                               PdfExportService pdfExportService,
-                               ExcelExportService excelExportService,
+                               ReportExportService reportExportService,
                                UserService userService) {
         this.transactionService  = transactionService;
-        this.pdfExportService    = pdfExportService;
-        this.excelExportService  = excelExportService;
+        this.reportExportService = reportExportService;
         this.userService         = userService;
     }
 
@@ -44,26 +40,8 @@ public class ApiReportController {
         List<Transaction> transactions =
                 transactionService.findByUserIdAndDateBetween(currentUserId(auth), from, to);
 
-        String filename = "fintrack-report-" + from + "-" + to;
-
-        switch (format.toLowerCase()) {
-            case "pdf" -> {
-                response.setContentType("application/pdf");
-                response.setHeader("Content-Disposition",
-                        "attachment; filename=\"" + filename + ".pdf\"");
-                pdfExportService.export(transactions, from, to, response.getOutputStream());
-            }
-            case "excel" -> {
-                response.setContentType(
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                response.setHeader("Content-Disposition",
-                        "attachment; filename=\"" + filename + ".xlsx\"");
-                excelExportService.export(transactions, from, to, response.getOutputStream());
-            }
-            default -> response.sendError(
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    "Неподдерживаемый формат: " + format + ". Используйте pdf или excel.");
-        }
+        reportExportService.writeExport(format, transactions, from, to,
+                "fintrack-report-" + from + "-" + to, response);
     }
 
     private Long currentUserId(Authentication auth) {

@@ -7,6 +7,7 @@ import com.fintrack.model.User;
 import com.fintrack.service.AnalyticsService;
 import com.fintrack.service.ExcelExportService;
 import com.fintrack.service.PdfExportService;
+import com.fintrack.service.ReportExportService;
 import com.fintrack.service.ReportService;
 import com.fintrack.service.TransactionService;
 import com.fintrack.service.UserService;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -29,7 +31,10 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// ReportExportService подключается как реальный бин: его writeExport выставляет Content-Type,
+// а PdfExportService/ExcelExportService остаются замоканными (пишут пустой поток).
 @WebMvcTest(ReportController.class)
+@Import(ReportExportService.class)
 @WithMockUser(username = "demo@fintrack.com")
 class ReportControllerTest {
 

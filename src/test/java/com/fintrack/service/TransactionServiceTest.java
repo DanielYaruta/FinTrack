@@ -168,14 +168,13 @@ class TransactionServiceTest {
     }
 
     @Test
-    void deleteById_whenNotOwner_shouldThrowSecurityException() {
-        // Транзакция принадлежит пользователю 99, а удаляет пользователь 1
+    void deleteById_whenNotOwner_shouldThrowResourceNotFoundException() {
         Transaction tx = makeTransaction(5L, 99L);
         given(transactionRepository.findById(5L)).willReturn(Optional.of(tx));
 
         assertThatThrownBy(() -> transactionService.deleteById(5L, 1L))
-                .isInstanceOf(SecurityException.class)
-                .hasMessageContaining("Нет доступа");
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("5");
     }
 
     @Test

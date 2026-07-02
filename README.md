@@ -117,7 +117,8 @@ mvn test
 mvn test -Dtest="TransactionServiceTest"
 ```
 
-57 тестов: 27 unit-тестов сервисного слоя + 30 MockMvc-тестов контроллеров.
+56 тестов: 28 unit-тестов сервисного слоя + 28 MockMvc-тестов контроллеров.
+Плюс 1 smoke-тест (`@Disabled`) — требует запущенного PostgreSQL, запускается вручную.
 
 ## Профили Spring
 

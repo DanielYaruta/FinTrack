@@ -4,8 +4,7 @@ import com.fintrack.exception.ResourceNotFoundException;
 import com.fintrack.model.Report;
 import com.fintrack.model.Transaction;
 import com.fintrack.service.AnalyticsService;
-import com.fintrack.service.ExcelExportService;
-import com.fintrack.service.PdfExportService;
+import com.fintrack.service.ReportExportService;
 import com.fintrack.service.ReportService;
 import com.fintrack.service.TransactionService;
 import com.fintrack.service.UserService;
@@ -25,25 +24,22 @@ import java.util.List;
 @RequestMapping("/reports")
 public class ReportController {
 
-    private final ReportService      reportService;
-    private final TransactionService transactionService;
-    private final AnalyticsService   analyticsService;
-    private final PdfExportService   pdfExportService;
-    private final ExcelExportService excelExportService;
-    private final UserService        userService;
+    private final ReportService       reportService;
+    private final TransactionService  transactionService;
+    private final AnalyticsService    analyticsService;
+    private final ReportExportService reportExportService;
+    private final UserService         userService;
 
     public ReportController(ReportService reportService,
                             TransactionService transactionService,
                             AnalyticsService analyticsService,
-                            PdfExportService pdfExportService,
-                            ExcelExportService excelExportService,
+                            ReportExportService reportExportService,
                             UserService userService) {
-        this.reportService      = reportService;
-        this.transactionService = transactionService;
-        this.analyticsService   = analyticsService;
-        this.pdfExportService   = pdfExportService;
-        this.excelExportService = excelExportService;
-        this.userService        = userService;
+        this.reportService       = reportService;
+        this.transactionService  = transactionService;
+        this.analyticsService    = analyticsService;
+        this.reportExportService = reportExportService;
+        this.userService         = userService;
     }
 
     @GetMapping
@@ -103,25 +99,8 @@ public class ReportController {
         List<Transaction> transactions =
                 transactionService.findByUserIdAndDateBetween(userId, from, to);
 
-        String filename = "fintrack-report-" + report.getPeriod();
-
-        switch (format.toLowerCase()) {
-            case "pdf" -> {
-                response.setContentType("application/pdf");
-                response.setHeader("Content-Disposition",
-                        "attachment; filename=\"" + filename + ".pdf\"");
-                pdfExportService.export(transactions, from, to, response.getOutputStream());
-            }
-            case "excel" -> {
-                response.setContentType(
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                response.setHeader("Content-Disposition",
-                        "attachment; filename=\"" + filename + ".xlsx\"");
-                excelExportService.export(transactions, from, to, response.getOutputStream());
-            }
-            default -> response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                    "Неподдерживаемый формат: " + format + ". Используйте pdf или excel.");
-        }
+        reportExportService.writeExport(format, transactions, from, to,
+                "fintrack-report-" + report.getPeriod(), response);
     }
 
     @PostMapping("/{id}/delete")

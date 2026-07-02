@@ -82,9 +82,7 @@ public class TransactionService {
 
     @Transactional
     public void deleteById(Long id, Long userId) {
-        Transaction transaction = findById(id);
-        verifyOwnership(transaction, userId);
-        transactionRepository.delete(transaction);
+        transactionRepository.delete(findByIdAndUserId(id, userId));
     }
 
     // --- Вспомогательные методы ---
@@ -93,18 +91,5 @@ public class TransactionService {
         if (categoryId == null) return null;
         return categoryRepository.findById(categoryId)
                 .orElseThrow(() -> ResourceNotFoundException.of("Категория", categoryId));
-    }
-
-    /**
-     * Проверяем, что транзакция принадлежит запрашивающему пользователю.
-     * Без этой проверки пользователь мог бы удалить чужие транзакции,
-     * просто угадав чужой id.
-     *
-     * TODO Stage 7: userId будет браться из SecurityContextHolder, не из параметра.
-     */
-    private void verifyOwnership(Transaction transaction, Long userId) {
-        if (!transaction.getUser().getId().equals(userId)) {
-            throw new SecurityException("Нет доступа к транзакции id=" + transaction.getId());
-        }
     }
 }
