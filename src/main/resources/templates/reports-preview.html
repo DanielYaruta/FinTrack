@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Предпросмотр отчёта')}"></head>
+
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="container mt-4 mb-5">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h4 class="mb-0">Предпросмотр отчёта</h4>
+            <p class="text-muted mb-0">
+                Период:
+                <strong th:text="${#temporals.format(from, 'dd.MM.yyyy')}"></strong>
+                —
+                <strong th:text="${#temporals.format(to, 'dd.MM.yyyy')}"></strong>
+            </p>
+        </div>
+        <!-- Кнопки скачивания — обычные ссылки, JS не нужен -->
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-danger"
+               th:href="@{/api/reports/export(format='pdf', from=${from}, to=${to})}">
+                <i class="bi bi-file-earmark-pdf me-1"></i>Скачать PDF
+            </a>
+            <a class="btn btn-outline-success"
+               th:href="@{/api/reports/export(format='excel', from=${from}, to=${to})}">
+                <i class="bi bi-file-earmark-excel me-1"></i>Скачать Excel
+            </a>
+            <a class="btn btn-outline-secondary" th:href="@{/reports}">
+                <i class="bi bi-arrow-left me-1"></i>Назад
+            </a>
+        </div>
+    </div>
+
+    <!-- Сводка -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-3">
+            <div class="card p-3 border-start border-success border-4">
+                <div class="text-muted small">Доходы</div>
+                <div class="h5 amount-income mb-0"
+                     th:text="'₽ ' + ${#numbers.formatDecimal(metrics.totalIncome(), 0, 'WHITESPACE', 2, 'COMMA')}">
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card p-3 border-start border-danger border-4">
+                <div class="text-muted small">Расходы</div>
+                <div class="h5 amount-expense mb-0"
+                     th:text="'₽ ' + ${#numbers.formatDecimal(metrics.totalExpense(), 0, 'WHITESPACE', 2, 'COMMA')}">
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card p-3 border-start border-primary border-4">
+                <div class="text-muted small">Баланс</div>
+                <div class="h5 mb-0"
+                     th:classappend="${metrics.balance().compareTo(T(java.math.BigDecimal).ZERO) >= 0} ? 'amount-income' : 'amount-expense'"
+                     th:text="'₽ ' + ${#numbers.formatDecimal(metrics.balance(), 0, 'WHITESPACE', 2, 'COMMA')}">
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card p-3 border-start border-secondary border-4">
+                <div class="text-muted small">Транзакций</div>
+                <div class="h5 mb-0" th:text="${metrics.transactionCount()}"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица транзакций -->
+    <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Транзакции</h6>
+            <span class="badge bg-secondary" th:text="${metrics.transactionCount()} + ' шт.'"></span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                <tr>
+                    <th>Дата</th>
+                    <th>Описание</th>
+                    <th>Категория</th>
+                    <th>Тип</th>
+                    <th class="text-end">Сумма</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${transactions}">
+                    <td class="text-nowrap text-muted"
+                        th:text="${#temporals.format(t.date, 'dd.MM.yyyy')}">
+                    </td>
+                    <td th:text="${t.description != null ? t.description : '—'}"></td>
+                    <td>
+                        <span class="badge rounded-pill"
+                              th:classappend="${t.type.name() == 'INCOME'} ? 'badge-income' : 'badge-expense'"
+                              th:text="${t.category != null ? t.category.name : t.type.name()}">
+                        </span>
+                    </td>
+                    <td th:text="${t.type.name() == 'INCOME'} ? 'Доход' : 'Расход'"></td>
+                    <td class="text-end fw-semibold"
+                        th:classappend="${t.type.name() == 'INCOME'} ? 'amount-income' : 'amount-expense'"
+                        th:text="${(t.type.name() == 'INCOME' ? '+' : '-') + ' ₽ ' + #numbers.formatDecimal(t.amount, 0, 'WHITESPACE', 2, 'COMMA')}">
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(transactions)}">
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                        Транзакций за выбранный период нет
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -79,9 +79,19 @@ public class AnalyticsService {
                 .collect(Collectors.toList());
     }
 
+    /** Метрики за конкретный период — используется для предпросмотра и экспорта. */
+    public FinancialMetrics getMetricsForPeriod(Long userId, LocalDate from, LocalDate to) {
+        List<Transaction> txs = transactionRepository
+                .findByUserIdAndDateBetweenOrderByDateDesc(userId, from, to);
+        BigDecimal income  = sumByType(txs, TransactionType.INCOME);
+        BigDecimal expense = sumByType(txs, TransactionType.EXPENSE);
+        return new FinancialMetrics(income, expense, income.subtract(expense), txs.size());
+    }
+
     // --- Вспомогательные методы ---
 
-    private BigDecimal sumByType(List<Transaction> txs, TransactionType type) {
+    // package-private: нужен в PdfExportService и ExcelExportService
+    BigDecimal sumByType(List<Transaction> txs, TransactionType type) {
         return txs.stream()
                 .filter(t -> t.getType() == type)
                 .map(Transaction::getAmount)

@@ -19,17 +19,32 @@
         <div class="col-lg-4">
             <div class="card p-4">
                 <h5 class="card-title mb-3"><i class="bi bi-file-earmark-plus me-1"></i>Создать отчёт</h5>
-                <p class="text-muted small">Отчёт создаётся за текущий период. Скачать PDF/Excel можно будет в следующем этапе.</p>
+                <!-- Предпросмотр и экспорт -->
+                <form th:action="@{/reports/preview}" method="get" class="mb-3">
+                    <div class="mb-2">
+                        <label class="form-label small mb-1">С</label>
+                        <input type="date" name="from" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small mb-1">По</label>
+                        <input type="date" name="to" class="form-control form-control-sm" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-eye me-1"></i>Предпросмотр и экспорт
+                    </button>
+                </form>
+
+                <hr class="my-3">
+                <p class="text-muted small mb-2">Быстрое создание за текущий период:</p>
 
                 <form th:action="@{/reports/monthly}" method="post" class="mb-2">
-                    <button type="submit" class="btn btn-outline-primary w-100">
+                    <button type="submit" class="btn btn-outline-primary w-100 btn-sm">
                         <i class="bi bi-calendar-month me-1"></i>Месячный отчёт
-                        <span class="text-muted small" th:text="'(' + ${#temporals.format(#temporals.createNow(), 'LLLL yyyy', #locale)} + ')'"></span>
                     </button>
                 </form>
 
                 <form th:action="@{/reports/quarterly}" method="post">
-                    <button type="submit" class="btn btn-outline-secondary w-100">
+                    <button type="submit" class="btn btn-outline-secondary w-100 btn-sm">
                         <i class="bi bi-calendar3 me-1"></i>Квартальный отчёт
                     </button>
                 </form>
