@@ -31,4 +31,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      */
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.type = :type")
     BigDecimal sumByUserIdAndType(@Param("userId") Long userId, @Param("type") TransactionType type);
+
+    // Spring Data выведет: SELECT COUNT(*) FROM transactions WHERE user_id = ?
+    long countByUserId(Long userId);
 }
