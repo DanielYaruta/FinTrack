@@ -141,6 +141,41 @@ mvn test -Dtest="TransactionServiceTest"
 | `dev` | Локальная разработка, verbose SQL-лог | По умолчанию |
 | `prod` | Продакшн, параметры БД из env-переменных | `--spring.profiles.active=prod` |
 
+## Запуск через Docker
+
+```bash
+# Скопируй шаблон секретов и задай свои значения
+cp .env.example .env
+# отредактируй .env: DB_USERNAME, DB_PASSWORD, POSTGRES_DB
+
+# Запусти PostgreSQL + приложение одной командой
+docker compose up --build
+```
+
+Приложение поднимется на **http://localhost:8080**. Flyway накатит миграции автоматически.  
+Первый запуск занимает ~2–3 минуты (скачивает образы и собирает JAR).
+
+## Деплой в облако
+
+Приложение упаковано в Docker-образ и готово к деплою — постоянного хостинга нет (портфельный проект).
+
+Общие шаги для любого облачного провайдера (Railway, Render, Fly.io, GCP Cloud Run и др.):
+
+1. **Регистр образов** — собери и загрузи образ в Docker Hub или другой реестр:
+   ```bash
+   docker build -t your-user/fintrack:latest .
+   docker push your-user/fintrack:latest
+   ```
+2. **Managed PostgreSQL** — создай managed-базу у провайдера, получи строку подключения.
+3. **Переменные окружения** — задай в панели провайдера:
+   - `SPRING_PROFILES_ACTIVE=prod`
+   - `DB_URL=jdbc:postgresql://<host>:5432/<db>`
+   - `DB_USERNAME=...`
+   - `DB_PASSWORD=...`
+4. **Деплой контейнера** — укажи образ из реестра, порт `8080`, и запусти сервис.
+
+Flyway накатит миграции при первом старте автоматически.
+
 ## Прогресс разработки
 
 - [x] Этап 0: Инициализация проекта (Spring Initializr, структура пакетов)
@@ -153,3 +188,4 @@ mvn test -Dtest="TransactionServiceTest"
 - [x] Этап 7: Spring Security (аутентификация, CSRF, BCrypt)
 - [x] Этап 8: Финальная документация и сборка
 - [x] Этап 9: Security-фикс (IDOR в GET /api/transactions/{id}), редактирование транзакций, скачивание отчётов из истории
+- [x] Этап 10: Docker (multi-stage Dockerfile, docker-compose, документация деплоя)

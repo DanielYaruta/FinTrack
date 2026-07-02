@@ -8,6 +8,9 @@ target/
 # Никогда не коммить секреты — переменные окружения в prod, локальный оверрайд ниже
 application-local.properties
 
+### Docker ###
+.env
+
 ### IntelliJ IDEA ###
 .idea/
 *.iws
