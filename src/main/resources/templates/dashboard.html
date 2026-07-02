@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Дашборд')}"></head>
+
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="container mt-4 mb-5">
+    <h1 class="h4 mb-4">Дашборд</h1>
+
+    <!-- === Метрики === -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card p-3 border-start border-success border-4">
+                <div class="text-muted small"><i class="bi bi-arrow-up-circle me-1"></i>Доходы</div>
+                <div class="metric-value amount-income"
+                     th:text="'₽ ' + ${#numbers.formatDecimal(metrics.totalIncome(), 0, 'WHITESPACE', 2, 'COMMA')}">
+                    ₽ 0,00
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card p-3 border-start border-danger border-4">
+                <div class="text-muted small"><i class="bi bi-arrow-down-circle me-1"></i>Расходы</div>
+                <div class="metric-value amount-expense"
+                     th:text="'₽ ' + ${#numbers.formatDecimal(metrics.totalExpense(), 0, 'WHITESPACE', 2, 'COMMA')}">
+                    ₽ 0,00
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card p-3 border-start border-primary border-4">
+                <div class="text-muted small"><i class="bi bi-piggy-bank me-1"></i>Баланс</div>
+                <div class="metric-value"
+                     th:classappend="${metrics.balance().compareTo(T(java.math.BigDecimal).ZERO) >= 0} ? 'amount-income' : 'amount-expense'"
+                     th:text="'₽ ' + ${#numbers.formatDecimal(metrics.balance(), 0, 'WHITESPACE', 2, 'COMMA')}">
+                    ₽ 0,00
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card p-3 border-start border-secondary border-4">
+                <div class="text-muted small"><i class="bi bi-list-ul me-1"></i>Транзакций</div>
+                <div class="metric-value" th:text="${metrics.transactionCount()}">0</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- === График + Недавние транзакции === -->
+    <div class="row g-3">
+
+        <!-- График -->
+        <div class="col-lg-7">
+            <div class="card p-3">
+                <h6 class="card-title mb-3">Доходы и расходы за 6 месяцев</h6>
+                <canvas id="trendChart" height="180"></canvas>
+            </div>
+        </div>
+
+        <!-- Недавние транзакции -->
+        <div class="col-lg-5">
+            <div class="card p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="card-title mb-0">Последние транзакции</h6>
+                    <a th:href="@{/transactions}" class="btn btn-sm btn-outline-secondary">Все</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <tbody>
+                        <tr th:each="t : ${recent}">
+                            <td class="text-muted small" th:text="${#temporals.format(t.date, 'dd.MM')}"></td>
+                            <td>
+                                <span th:text="${t.category != null ? t.category.name : '—'}"></span>
+                                <div class="text-muted small" th:text="${t.description}"></div>
+                            </td>
+                            <td class="text-end fw-semibold"
+                                th:classappend="${t.type.name() == 'INCOME'} ? 'amount-income' : 'amount-expense'"
+                                th:text="${(t.type.name() == 'INCOME' ? '+' : '-') + '₽ ' + #numbers.formatDecimal(t.amount, 0, 'WHITESPACE', 2, 'COMMA')}">
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recent)}">
+                            <td colspan="3" class="text-center text-muted py-3">Транзакций нет</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<!--
+  th:inline="javascript" — Thymeleaf обрабатывает этот блок и вставляет данные из модели.
+  /*[[...]]*/  — синтаксис для инлайн-значений (значение в /* */ — фолбек для IDE/редактора).
+-->
+<script th:inline="javascript">
+    const labels   = /*[[${chartMonths}]]*/ [];
+    const incomes  = /*[[${chartIncomes}]]*/ [];
+    const expenses = /*[[${chartExpenses}]]*/ [];
+
+    new Chart(document.getElementById('trendChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Доходы',
+                    data: incomes,
+                    backgroundColor: 'rgba(25, 135, 84, 0.75)',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Расходы',
+                    data: expenses,
+                    backgroundColor: 'rgba(220, 53, 69, 0.75)',
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: v => '₽' + v.toLocaleString('ru-RU')
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

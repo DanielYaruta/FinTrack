@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Транзакции')}"></head>
+
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="container mt-4 mb-5">
+
+    <!-- Flash-сообщение об успехе (появляется после redirect) -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-1"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- === Форма добавления === -->
+        <div class="col-lg-4">
+            <div class="card p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-plus-circle me-1"></i>Новая транзакция</h5>
+
+                <!--
+                  th:action="@{/transactions}" — Thymeleaf генерирует правильный URL,
+                    учитывая context path приложения.
+                  th:object="${transactionDto}" — привязываем форму к DTO.
+                    Теперь th:field="*{amount}" эквивалентно th:field="${transactionDto.amount}".
+                -->
+                <form th:action="@{/transactions}" method="post" th:object="${transactionDto}"
+                      novalidate>
+
+                    <!-- Сумма -->
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Сумма, ₽</label>
+                        <input type="number" step="0.01" min="0.01"
+                               class="form-control" id="amount"
+                               th:field="*{amount}"
+                               th:classappend="${#fields.hasErrors('amount')} ? 'is-invalid'">
+                        <!--
+                          th:errors="*{amount}" — выводит сообщения об ошибках
+                            для поля amount из BindingResult.
+                        -->
+                        <div class="invalid-feedback" th:errors="*{amount}"></div>
+                    </div>
+
+                    <!-- Тип -->
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Тип</label>
+                        <select class="form-select" id="type"
+                                th:field="*{type}"
+                                th:classappend="${#fields.hasErrors('type')} ? 'is-invalid'">
+                            <option value="">— выберите —</option>
+                            <option value="INCOME">Доход</option>
+                            <option value="EXPENSE">Расход</option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{type}"></div>
+                    </div>
+
+                    <!-- Категория -->
+                    <div class="mb-3">
+                        <label for="categoryId" class="form-label">Категория</label>
+                        <select class="form-select" id="categoryId" th:field="*{categoryId}">
+                            <option value="">— без категории —</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.name}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Дата -->
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Дата</label>
+                        <input type="date" class="form-control" id="date"
+                               th:field="*{date}"
+                               th:classappend="${#fields.hasErrors('date')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{date}"></div>
+                    </div>
+
+                    <!-- Описание -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Описание <span class="text-muted">(необяз.)</span></label>
+                        <input type="text" class="form-control" id="description"
+                               th:field="*{description}"
+                               th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{description}"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-lg me-1"></i>Добавить
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- === Список транзакций === -->
+        <div class="col-lg-8">
+
+            <!-- Фильтр по датам -->
+            <div class="card p-3 mb-3">
+                <form th:action="@{/transactions}" method="get" class="row g-2 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label small mb-1">С</label>
+                        <input type="date" name="from" class="form-control form-control-sm"
+                               th:value="${from}">
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label small mb-1">По</label>
+                        <input type="date" name="to" class="form-control form-control-sm"
+                               th:value="${to}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-funnel"></i> Фильтр
+                        </button>
+                        <a th:href="@{/transactions}" class="btn btn-sm btn-outline-secondary ms-1">Сброс</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Таблица -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Дата</th>
+                            <th>Описание / Категория</th>
+                            <th class="text-end">Сумма</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="t : ${transactions}">
+                            <td class="text-nowrap text-muted"
+                                th:text="${#temporals.format(t.date, 'dd.MM.yyyy')}">
+                            </td>
+                            <td>
+                                <div th:text="${t.description != null && !t.description.isEmpty() ? t.description : '—'}"></div>
+                                <span class="badge rounded-pill"
+                                      th:classappend="${t.type.name() == 'INCOME'} ? 'badge-income' : 'badge-expense'"
+                                      th:text="${t.category != null ? t.category.name : t.type.name()}">
+                                </span>
+                            </td>
+                            <td class="text-end fw-semibold text-nowrap"
+                                th:classappend="${t.type.name() == 'INCOME'} ? 'amount-income' : 'amount-expense'"
+                                th:text="${(t.type.name() == 'INCOME' ? '+' : '-') + ' ₽ ' + #numbers.formatDecimal(t.amount, 0, 'WHITESPACE', 2, 'COMMA')}">
+                            </td>
+                            <td class="text-end">
+                                <!-- Удаление через POST, без JS -->
+                                <form th:action="@{/transactions/{id}/delete(id=${t.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('Удалить транзакцию?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(transactions)}">
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                                Транзакций не найдено
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

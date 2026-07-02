@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/dashboard}">
+            <i class="bi bi-wallet2 me-1"></i>FinTrack
+        </a>
+
+        <!-- Кнопка-гамбургер для мобильных (работает через Bootstrap JS) -->
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav me-auto">
+
+                <!--
+                  th:classappend — добавляет класс "active" к текущему пункту меню.
+                  #httpServletRequest.requestURI.startsWith('/dashboard') — проверяем
+                  текущий URL через встроенный объект Thymeleaf.
+                -->
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/dashboard}"
+                       th:classappend="${#httpServletRequest.requestURI.startsWith('/dashboard')} ? 'active'">
+                        <i class="bi bi-speedometer2 me-1"></i>Дашборд
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/transactions}"
+                       th:classappend="${#httpServletRequest.requestURI.startsWith('/transactions')} ? 'active'">
+                        <i class="bi bi-arrow-left-right me-1"></i>Транзакции
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/categories}"
+                       th:classappend="${#httpServletRequest.requestURI.startsWith('/categories')} ? 'active'">
+                        <i class="bi bi-tags me-1"></i>Категории
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/reports}"
+                       th:classappend="${#httpServletRequest.requestURI.startsWith('/reports')} ? 'active'">
+                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Отчёты
+                    </a>
+                </li>
+            </ul>
+
+            <a class="nav-link text-light"
+               th:href="@{/profile}"
+               th:classappend="${#httpServletRequest.requestURI.startsWith('/profile')} ? 'active'">
+                <i class="bi bi-person-circle me-1"></i>Профиль
+            </a>
+        </div>
+    </div>
+</nav>
+
+</body>
+</html>

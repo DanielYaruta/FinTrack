@@ -2,6 +2,7 @@ package com.fintrack.dto;
 
 import com.fintrack.model.TransactionType;
 import jakarta.validation.constraints.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,6 +33,7 @@ public class TransactionDto {
 
     @NotNull(message = "Дата обязательна")
     @PastOrPresent(message = "Дата не может быть в будущем")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) // HTML <input type="date"> даёт yyyy-MM-dd
     private LocalDate date;
 
     @Size(max = 500, message = "Описание не более 500 символов")

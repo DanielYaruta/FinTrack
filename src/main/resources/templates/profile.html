@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Профиль')}"></head>
+
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="container mt-4 mb-5">
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-1"></i><span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-circle fs-1 text-secondary"></i>
+                    <h5 class="mt-2 mb-0" th:text="${user.name}">Пользователь</h5>
+                    <p class="text-muted small"
+                       th:text="'Зарегистрирован: ' + ${#temporals.format(user.registrationDate, 'dd.MM.yyyy')}">
+                    </p>
+                </div>
+
+                <form th:action="@{/profile}" method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Имя</label>
+                        <input type="text" class="form-control" id="name"
+                               name="name" th:value="${user.name}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email"
+                               name="email" th:value="${user.email}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-floppy me-1"></i>Сохранить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
