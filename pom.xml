@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        spring-boot-starter-parent управляет версиями всех Spring-зависимостей.
+        Тебе не нужно указывать version для большинства spring-* артефактов —
+        родительский POM уже прописал совместимые версии.
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.fintrack</groupId>
+    <artifactId>fintrack</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>FinTrack</name>
+    <description>Personal Finance Tracker — portfolio project</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <itext.version>7.2.5</itext.version>
+        <poi.version>5.2.5</poi.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- ===== WEB / MVC ===== -->
+
+        <!-- Embedded Tomcat + Spring MVC + Jackson (JSON) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Thymeleaf — серверные HTML-шаблоны -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- ===== ДАННЫЕ ===== -->
+
+        <!-- Spring Data JPA (Hibernate под капотом) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Spring JDBC — для DAO-слоя вручную (Report) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL JDBC-драйвер -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Flyway — версионирование схемы БД -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
+        <!-- ===== ВАЛИДАЦИЯ ===== -->
+
+        <!-- Bean Validation (@NotNull, @Size, @Email и т.д.) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- ===== ОТЧЁТЫ ===== -->
+
+        <!-- iText 7: ядро для генерации PDF -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>kernel</artifactId>
+            <version>${itext.version}</version>
+        </dependency>
+
+        <!-- iText 7: layout — для таблиц, параграфов, стилей -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>${itext.version}</version>
+        </dependency>
+
+        <!-- Apache POI — работа с Excel (.xlsx) -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
+
+        <!-- ===== DEV / ИНСТРУМЕНТЫ ===== -->
+
+        <!--
+            DevTools: автоматический перезапуск приложения при изменении классов.
+            optional=true — не попадает в финальный JAR.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ===== ТЕСТЫ ===== -->
+
+        <!-- JUnit 5 + Mockito + MockMvc — всё в одном стартере -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                Этот плагин позволяет собрать "fat JAR" (со всеми зависимостями),
+                который запускается одной командой: java -jar fintrack.jar
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
