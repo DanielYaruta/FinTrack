@@ -2,28 +2,20 @@
 
 Веб-приложение для учёта личных финансов: доходы, расходы, аналитика по периодам, тренды, экспорт отчётов в PDF и Excel.
 
-Собрано как учебный портфельный проект — покрывает полный стек Spring Boot-приложения от слоя данных до аутентификации и тестов.
+# Стек
 
-## Стек
-
-| Слой | Технологии |
-|------|-----------|
-| Язык / платформа | Java 17, Maven |
-| Фреймворк | Spring Boot 3.2, Spring MVC, Spring Data JPA, Spring JDBC |
-| База данных | PostgreSQL, Flyway (миграции) |
-| Безопасность | Spring Security 6, BCrypt |
-| Шаблонизатор | Thymeleaf 3.1 + Spring Security extras |
-| Фронтенд | Bootstrap 5, Chart.js, Bootstrap Icons |
-| Экспорт | iText 7 (PDF), Apache POI (Excel) |
-| Тесты | JUnit 5, Mockito, Spring MockMvc |
+| Категория | Технологии |
+|---|---|
+| **Язык / платформа** | [![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/) [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/) |
+| **Фреймворк** | [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot) [![Spring MVC](https://img.shields.io/badge/Spring%20MVC-6DB33F?style=for-the-badge&logo=spring&logoColor=white)](https://docs.spring.io/spring-framework/reference/web/webmvc.html) [![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white)](https://spring.io/projects/spring-data-jpa) [![Spring JDBC](https://img.shields.io/badge/Spring%20JDBC-6DB33F?style=for-the-badge&logo=spring&logoColor=white)](https://docs.spring.io/spring-framework/reference/data-access/jdbc.html) |
+| **База данных** | [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/) [![Flyway](https://img.shields.io/badge/Flyway-CC0200?style=for-the-badge&logo=flyway&logoColor=white)](https://flywaydb.org/) |
+| **Безопасность** | [![Spring Security](https://img.shields.io/badge/Spring%20Security-6-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security) [![BCrypt](https://img.shields.io/badge/BCrypt-4B0082?style=for-the-badge&logo=letsencrypt&logoColor=white)](https://en.wikipedia.org/wiki/Bcrypt) |
+| **Шаблонизатор** | [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3.1-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/) |
+| **Фронтенд** | [![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/) [![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)](https://www.chartjs.org/) [![Bootstrap Icons](https://img.shields.io/badge/Bootstrap%20Icons-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://icons.getbootstrap.com/) |
+| **Экспорт** | [![iText](https://img.shields.io/badge/iText%207-PDF-E44D26?style=for-the-badge)](https://itextpdf.com/) [![Apache POI](https://img.shields.io/badge/Apache%20POI-Excel-D22128?style=for-the-badge&logo=apache&logoColor=white)](https://poi.apache.org/) |
+| **Тесты** | [![JUnit 5](https://img.shields.io/badge/JUnit%205-25A162?style=for-the-badge&logo=junit5&logoColor=white)](https://junit.org/junit5/) [![Mockito](https://img.shields.io/badge/Mockito-78A641?style=for-the-badge)](https://site.mockito.org/) [![MockMvc](https://img.shields.io/badge/Spring%20MockMvc-6DB33F?style=for-the-badge&logo=spring&logoColor=white)](https://docs.spring.io/spring-framework/reference/testing/spring-mvc-test-framework.html) |
 
 ## Быстрый старт
-
-### Требования
-
-- Java 17+
-- Maven 3.8+
-- PostgreSQL 14+
 
 ### 1. База данных
 
@@ -175,18 +167,3 @@ docker compose up --build
 4. **Деплой контейнера** — укажи образ из реестра, порт `8080`, и запусти сервис.
 
 Flyway накатит миграции при первом старте автоматически.
-
-## Прогресс разработки
-
-- [x] Этап 0: Инициализация проекта (Spring Initializr, структура пакетов)
-- [x] Этап 1: Слой данных (JPA-сущности, репозитории, Flyway-миграции)
-- [x] Этап 2: Сервисный слой + бизнес-логика
-- [x] Этап 3: MVC-контроллеры и Thymeleaf-шаблоны
-- [x] Этап 4: REST API + экспорт PDF/Excel
-- [x] Этап 5: JS-слой (AJAX, Chart.js, уведомления)
-- [x] Этап 6: Тесты (Unit + MockMvc)
-- [x] Этап 7: Spring Security (аутентификация, CSRF, BCrypt)
-- [x] Этап 8: Финальная документация и сборка
-- [x] Этап 9: Security-фикс (IDOR в GET /api/transactions/{id}), редактирование транзакций, скачивание отчётов из истории
-- [x] Этап 10: Docker (multi-stage Dockerfile, docker-compose, документация деплоя)
-- [x] Этап 11: Годовой тип отчёта (ReportType.YEARLY, generateYearly, resolveDateRange, UI)
